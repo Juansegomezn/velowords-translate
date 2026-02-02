@@ -60,7 +60,7 @@ class GoogleTranslator {
 
   setupListeners() { 
     this.inputText.addEventListener('input', () => {
-
+      this.translateText()
     })
 
     this.sourceLanguage.addEventListener('change', () => this.translateText())
@@ -70,7 +70,30 @@ class GoogleTranslator {
   }
 
   translateText() {
+    const text = this.inputText.value.trim()
 
+    if (!text) {
+      this.outputText.textContent = ''
+      return
+    }
+
+    this.outputText.textContent = 'Translating...'
+
+    try {
+      const sourceLanguage = this.sourceLanguage.value 
+      const targetLanguage = this.targetLanguage.value
+
+      if (sourceLanguage === targetLanguage) {
+        return this.outputText.textContent = text
+      }
+
+      // call translation AI API here
+      setTimeout(() => {
+        this.outputText.textContent = `${text} translated`
+      }, 1000)
+    } catch (error) {
+      
+    }
   }
 
   swapLanguages() {
