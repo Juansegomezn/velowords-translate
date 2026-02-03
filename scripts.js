@@ -35,6 +35,7 @@ class GoogleTranslator {
     this.init()
     this.setupListeners()
 
+    this.translationTimeout = null
     this.currentTransaltor = null
     this.currentDetector = null
   }
@@ -60,13 +61,20 @@ class GoogleTranslator {
 
   setupListeners() { 
     this.inputText.addEventListener('input', () => {
-      this.translateText()
+      this.debounceTranslate()
     })
 
     this.sourceLanguage.addEventListener('change', () => this.translateText())
     this.targetLanguage.addEventListener('change', () => this.translateText())
   
     this.swapLanguages.addEventListener('click', () => this.swapLanguages())
+  }
+
+  debounceTransleta() {
+    clearTimeout(this.translationTimeout)
+    this.translationTimeout = setTimeout(() => {
+      this.translateText()
+    }, 500)
   }
 
   translateText() {
