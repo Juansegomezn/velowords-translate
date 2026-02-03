@@ -37,6 +37,7 @@ class GoogleTranslator {
 
     this.translationTimeout = null
     this.currentTransaltor = null
+    this.currentTransaltorKey = null
     this.currentDetector = null
   }
 
@@ -70,14 +71,51 @@ class GoogleTranslator {
     this.swapLanguages.addEventListener('click', () => this.swapLanguages())
   }
 
-  debounceTransleta() {
+  debounceTranslate() {
     clearTimeout(this.translationTimeout)
     this.translationTimeout = setTimeout(() => {
       this.translateText()
     }, 500)
   }
 
-  translateText() {
+  async getTranslation(text) {
+    const sourceLanguage = this.sourceLanguage.value 
+    const targetLanguage = this.targetLanguage.value
+
+    if (sourceLanguage === targetLanguage) return text
+    
+    try {
+      const status = await window.Translator.availability({
+        sourceLanguage,
+        targetLanguage
+      })
+
+      if (status === 'unavailable') {
+        throw new Error(`Translation from ${sourceLanguage} to ${targetLanguage} is unavailable for the selected languages.`)
+      }
+    } catch (error) {
+      console.error('Error checking translation availability.', error)
+
+      throw new Error('Error checking translation availability.')
+    }
+
+    // Translater instance management
+    const translatorKey = `${sourceLanguage}-${targetLanguage}`
+
+    if (!this.currentTransaltor || this.currentTransaltorKey !== translatorKey) {
+      // Liberate previous translator
+      if (this.currentTransaltor) {
+        this.currentTransaltor.destroy()
+      }
+      
+      this.currentTransaltor = await window.Translator.createTranslator({
+        sourceLanguage,
+        targetLanguage
+      })
+    }
+  }
+
+  async translateText() {
     const text = this.inputText.value.trim()
 
     if (!text) {
@@ -88,19 +126,10 @@ class GoogleTranslator {
     this.outputText.textContent = 'Translating...'
 
     try {
-      const sourceLanguage = this.sourceLanguage.value 
-      const targetLanguage = this.targetLanguage.value
-
-      if (sourceLanguage === targetLanguage) {
-        return this.outputText.textContent = text
-      }
-
-      // call translation AI API here
-      setTimeout(() => {
-        this.outputText.textContent = `${text} translated`
-      }, 1000)
+      const translatedText = await this.getTranslation(text)
+      this.outputText.textContent = translatedText
     } catch (error) {
-      
+      this.outputText.textContent = 'Error translating text.'
     }
   }
 
