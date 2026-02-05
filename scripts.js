@@ -79,66 +79,73 @@ class GoogleTranslator {
   }
 
   async getTranslation(text) {
-    const sourceLanguage = this.sourceLanguage.value 
+    const sourceLanguage = this.sourceLanguage.value
     const targetLanguage = this.targetLanguage.value
 
-    if (sourceLanguage === targetLanguage) return text
+    if (!text || sourceLanguage === targetLanguage) return text
 
-    // Check translation availability
-    try {
-      const status = await window.Translator.availability({
-        sourceLanguage,
-        targetLanguage
-      })
-
-      if (status === 'unavailable') {
-        throw new Error(`Translation from ${sourceLanguage} to ${targetLanguage} is unavailable for the selected languages.`)
-      }
-    } catch (error) {
-      console.error('Error checking translation availability.', error)
-
-      throw new Error(`Translation from ${sourceLanguage} to ${targetLanguage} is unavailable for the selected languages.`)
+    // ---------- Support detection ----------
+    if (!window.Translator) {
+      throw new Error("Built-in Translator API not supported in this browser.")
     }
 
-    // Translation instance management
-    const status = await window.Translator.availability({
+    // Detect Edge browser
+    const isEdge = navigator.userAgent.includes("Edg")
+    if (isEdge) {
+      throw new Error("Translator API is currently unstable in Microsoft Edge. Please use Chrome.")
+    }
+
+    // ---------- Availability ----------
+    const availability = await window.Translator.availability({
       sourceLanguage,
       targetLanguage
     })
-    console.log('status', status);
-    
+
+    if (availability === "unavailable") {
+      throw new Error(`Translation unavailable for ${sourceLanguage} → ${targetLanguage}`)
+    }
+
     const translatorKey = `${sourceLanguage}-${targetLanguage}`
 
     try {
-      if (!this.currentTranslator || this.currentTranslatorKey !== translatorKey) {
-        // Liberate previous translator
+
+      // ---------- Translator cache ----------
+      const needsNewTranslator =
+        !this.currentTranslator ||
+        this.currentTranslatorKey !== translatorKey
+
+      if (needsNewTranslator) {
+
+        // Destroy previous instance
         if (this.currentTranslator) {
-          this.currentTranslator.destroy()
+          await this.currentTranslator.destroy()
         }
 
-        console.log('status', status);
-        
+        // Create translator
         this.currentTranslator = await window.Translator.create({
           sourceLanguage,
           targetLanguage,
           monitor: (monitor) => {
-            monitor.addEventListener('downloadprogress', (e) => {
-              this.outputText.innerHTML = `<span class="loading">Download model: ${Math.floor(e.loaded * 100)}%</span>`
+            monitor.addEventListener("downloadprogress", (e) => {
+              this.outputText.textContent =
+                `Downloading model: ${Math.floor(e.loaded * 100)}%`
             })
           }
         })
+
+        // ---------- Warm-up ----------
+        // Some browsers require an initial dummy translation to load the model properly.
+        await this.currentTranslator.translate(" ")
+
+        this.currentTranslatorKey = translatorKey
       }
-      
-      console.log('status', status);
-      
 
-      this.currentTranslatorKey = translatorKey
+      // ---------- Real translation ----------
+      return await this.currentTranslator.translate(text)
 
-      const translation = await this.currentTranslator.translate(text)
-      return translation
     } catch (error) {
-      console.error('Error during translation.', error)
-      return 'Error during translation.'
+      console.error("Translation error:", error)
+      throw error
     }
   }
 
