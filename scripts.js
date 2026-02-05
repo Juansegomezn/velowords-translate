@@ -48,7 +48,7 @@ class GoogleTranslator {
 
     this.sourceLanguage = $('#sourceLanguage')
     this.targetLanguage = $('#targetLanguage')
-    this.swapLanguages = $('#swapLanguages')
+    this.swapLanguagesButton = $('#swapLanguages')
 
     this.micButton = $('#micButton')
     this.copyButton = $('#copyButton')
@@ -68,7 +68,7 @@ class GoogleTranslator {
     this.sourceLanguage.addEventListener('change', () => this.translate())
     this.targetLanguage.addEventListener('change', () => this.translate())
   
-    this.swapLanguages.addEventListener('click', () => this.swapLanguages())
+    this.swapLanguagesButton.addEventListener('click', () => this.swapLanguages())
   }
 
   debounceTranslate() {
@@ -169,7 +169,37 @@ class GoogleTranslator {
   }
 
   swapLanguages() {
+    const sourceLang = this.sourceLanguage.value
+    const targetLang = this.targetLanguage.value
 
+    // Google Translate behavior
+    // If source is auto → do nothing
+    if (sourceLang === GoogleTranslator.DEFAULT_SOURCE_LANGUAGE) {
+      return
+    }
+
+    // ---------- Swap languages ----------
+    this.sourceLanguage.value = targetLang
+    this.targetLanguage.value = sourceLang
+
+    // ---------- Swap text ----------
+    const inputText = this.inputText.value
+    const outputText = this.outputText.textContent
+
+    this.inputText.value = outputText || ''
+    this.outputText.textContent = inputText || ''
+
+    // ---------- Reset translator cache ----------
+    if (this.currentTranslator) {
+      this.currentTranslator.destroy()
+      this.currentTranslator = null
+      this.currentTranslatorKey = null
+    }
+
+    // ---------- Re-translate if text exists ----------
+    if (this.inputText.value.trim()) {
+      this.translate()
+    }
   }
 
   checkAPISupport() {
