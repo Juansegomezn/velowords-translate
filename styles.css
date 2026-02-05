@@ -193,9 +193,3 @@ select {
 .output-controls {
   background-color: var(--bg-secondary);
 }
-
-.loading {
-  color: var(--warning-text);
-  font-size: 16px;
-  font-weight: 500;
-}
