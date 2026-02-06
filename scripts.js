@@ -39,6 +39,9 @@ class GoogleTranslator {
     this.currentTranslator = null
     this.currentTranslatorKey = null
     this.currentDetector = null
+
+    this.recognition = null
+    this.isListening = false
   }
 
   init () {
@@ -70,6 +73,7 @@ class GoogleTranslator {
   
     this.swapLanguagesButton.addEventListener('click', () => this.swapLanguages())
     this.copyButton.addEventListener('click', () => this.copyTranslation())
+    this.micButton.addEventListener('click', () => this.toggleSpeechRecognition())
   }
 
   debounceTranslate() {
@@ -301,6 +305,83 @@ class GoogleTranslator {
       icon.textContent = originalIcon
     }, 1500)
   }
+
+  initSpeechRecognition() {
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition
+
+    if (!SpeechRecognition) {
+      console.warn("Speech recognition not supported")
+      return null
+    }
+
+    const recognition = new SpeechRecognition()
+
+    recognition.continuous = false
+    recognition.interimResults = true
+    recognition.lang =
+      GoogleTranslator.FULL_LANGUAGES_CODES[this.sourceLanguage.value] || "en-US"
+
+    return recognition
+  }
+
+  toggleSpeechRecognition() {
+    if (this.isListening) {
+      this.recognition?.stop()
+      return
+    }
+
+    this.recognition = this.initSpeechRecognition()
+
+    if (!this.recognition) return
+
+    this.isListening = true
+    this.updateMicUI(true)
+
+    let finalTranscript = ""
+
+    this.recognition.onresult = (event) => {
+
+      let interimTranscript = ""
+
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript
+
+        if (event.results[i].isFinal) {
+          finalTranscript += transcript
+        } else {
+          interimTranscript += transcript
+        }
+      }
+
+      this.inputText.value = finalTranscript + interimTranscript
+      this.debounceTranslate()
+    }
+
+    this.recognition.onerror = (event) => {
+      console.warn("Speech recognition error:", event.error)
+      this.stopSpeechRecognition()
+    }
+
+    this.recognition.onend = () => {
+      this.stopSpeechRecognition()
+    }
+
+    this.recognition.start()
+  }
+
+  stopSpeechRecognition() {
+    this.isListening = false
+    this.updateMicUI(false)
+  }
+
+  updateMicUI(listening) {
+    const icon = this.micButton.querySelector("span")
+
+    if (!icon) return
+
+    icon.textContent = listening ? "mic_off" : "mic"
+  } 
 }
 
 
