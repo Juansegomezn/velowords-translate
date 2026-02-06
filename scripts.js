@@ -79,8 +79,27 @@ class GoogleTranslator {
   }
 
   async getTranslation(text) {
-    const sourceLanguage = this.sourceLanguage.value
+    let sourceLanguage = this.sourceLanguage.value
     const targetLanguage = this.targetLanguage.value
+
+    if (!text) return text
+
+    // ---------- Auto detect ----------
+    if (sourceLanguage === GoogleTranslator.DEFAULT_SOURCE_LANGUAGE) {
+
+      this.outputText.textContent = "Detecting language..."
+
+      const detectedLanguage = await this.detectLanguage(text)
+
+      if (!detectedLanguage) {
+        throw new Error("Could not detect language")
+      }
+
+      sourceLanguage = detectedLanguage
+      this.sourceLanguage.value = detectedLanguage
+    }
+
+    if (sourceLanguage === targetLanguage) return text
 
     if (!text || sourceLanguage === targetLanguage) return text
 
@@ -210,6 +229,36 @@ class GoogleTranslator {
       console.warn('Native translation or detection APIs are not supported.')
     } else {
       console.log('✅ Native AI APIs are supported.')
+    }
+  }
+
+  async detectLanguage(text) {
+    if (!text || !this.hasNativeDetector) return null
+
+    try {
+
+      if (!this.currentDetector) {
+
+        this.currentDetector = await window.LanguageDetector.create({
+          monitor: () => {}
+        })
+
+        await this.currentDetector.detect(" ")
+      }
+
+      const results = await this.currentDetector.detect(text)
+
+      if (!results || !results.length) return null
+
+      const detected = results.find(r =>
+        GoogleTranslator.SUPPORTED_LANGUAGES.includes(r.detectedLanguage)
+      )
+
+      return detected?.detectedLanguage ?? null
+
+    } catch (error) {
+      console.warn("Language detection failed:", error)
+      return null
     }
   }
 }
