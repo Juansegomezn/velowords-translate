@@ -69,6 +69,7 @@ class GoogleTranslator {
     this.targetLanguage.addEventListener('change', () => this.translate())
   
     this.swapLanguagesButton.addEventListener('click', () => this.swapLanguages())
+    this.copyButton.addEventListener('click', () => this.copyTranslation())
   }
 
   debounceTranslate() {
@@ -260,6 +261,45 @@ class GoogleTranslator {
       console.warn("Language detection failed:", error)
       return null
     }
+  }
+
+  async copyTranslation() {
+    const text = this.outputText.textContent.trim()
+
+    if (!text) return
+
+    try {
+      await navigator.clipboard.writeText(text)
+
+      this.showCopyFeedback()
+
+    } catch (error) {
+      console.warn("Clipboard API failed, using fallback", error)
+
+      // ---------- Fallback ----------
+      const textarea = document.createElement("textarea")
+      textarea.value = text
+      document.body.appendChild(textarea)
+      textarea.select()
+      document.execCommand("copy")
+      document.body.removeChild(textarea)
+
+      this.showCopyFeedback()
+    }
+  }
+
+  showCopyFeedback() {
+    const icon = this.copyButton.querySelector("span")
+
+    if (!icon) return
+
+    const originalIcon = icon.textContent
+
+    icon.textContent = "check"
+
+    setTimeout(() => {
+      icon.textContent = originalIcon
+    }, 1500)
   }
 }
 
