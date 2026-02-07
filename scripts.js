@@ -44,6 +44,7 @@ class GoogleTranslator {
   constructor() {
     this.init()
     this.setupListeners()
+    this.syncScroll()
 
     this.translationTimeout = null
     this.currentTranslator = null
@@ -579,6 +580,12 @@ class GoogleTranslator {
   hideSuggestion() {
     this.suggestionBox.classList.remove('visible')
     this.suggestionBox.innerHTML = ''
+  }
+
+  syncScroll() {
+    this.inputText.addEventListener('scroll', () => {
+      this.outputText.scrollTop = this.inputText.scrollTop
+    })
   }
 }
 
