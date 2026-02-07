@@ -82,6 +82,8 @@ class GoogleTranslator {
     this.copyButton.addEventListener('click', () => this.copyTranslation())
     this.micButton.addEventListener('click', () => this.toggleSpeechRecognition())
     this.volumeButton.addEventListener('click', () => this.speakTranslation())
+    this.clearButton.addEventListener('click', () => this.clearText())
+    this.inputText.addEventListener('input', () => { this.toggleClearButton() })
   }
 
   debounceTranslate() {
@@ -459,6 +461,44 @@ class GoogleTranslator {
     if (!icon) return
 
     icon.textContent = speaking ? "volume_off" : "volume_up"
+  }
+
+  clearText() {
+    // Cancel debounce translation
+    if (this.translationTimeout) {
+      clearTimeout(this.translationTimeout)
+      this.translationTimeout = null
+    }
+
+    // Stop speech recognition (mic)
+    if (this.recognition) {
+      try {
+        this.recognition.stop()
+      } catch (_) {}
+    }
+
+    // Stop TTS if speaking
+    if (speechSynthesis.speaking) {
+      speechSynthesis.cancel()
+    }
+
+    // Clear texts
+    this.inputText.value = ''
+    this.outputText.textContent = ''
+
+    // Reset UI states
+    this.updateMicUI(false)
+    this.updateVolumeUI(false)
+
+    // Focus input for better UX
+    this.toggleClearButton()
+    this.inputText.focus()
+  }
+
+  toggleClearButton() {
+    const hasText = this.inputText.value.trim().length > 0
+
+    this.clearButton.classList.toggle('visible', hasText)
   }
 }
 

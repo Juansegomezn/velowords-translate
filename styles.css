@@ -155,6 +155,19 @@ select {
   flex-direction: column;
   position: relative;
 }
+.clear-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+.clear-button.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
 #inputText {
   flex: 1;
   border: 0;
