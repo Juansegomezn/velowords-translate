@@ -1,34 +1,27 @@
 :root {
-  /* Google Brand Colors */
-  --google-blue: #4285f4;
-  --google-red: #ea4335;
-  --google-yellow: #fbbc05;
-  --google-green: #34a853;
+  /* Brand Colors */
+  --brand-main: #38bdf8;
+  --brand-secondary: #7dd3fc;
 
   /* Text Colors */
-  --text-primary: #3c4043;
-  --text-secondary: #5f6368;
-  --text-tertiary: #9aa0a6;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-tertiary: #64748b;
 
   /* Background Colors */
-  --bg-primary: white;
-  --bg-secondary: #f8f9fa;
-  --bg-hover: #f1f3f4;
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-hover: #334155;
 
   /* Border Colors */
-  --border-primary: #e8eaed;
-  --border-secondary: #dadce0;
+  --border-primary: #334155;
+  --border-secondary: #475569;
 
   /* State Colors */
-  --color-focus: #1a73e8;
-  --color-success: var(--google-green);
-  --color-warning: var(--google-yellow);
-  --color-error: var(--google-red);
-
-  /* Warning Colors */
-  --warning-bg: #fff3cd;
-  --warning-text: #856404;
-  --warning-border: #ffeaa7;
+  --color-focus: #38bdf8;
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
 }
 
 
@@ -49,6 +42,11 @@ body {
   margin: 0 auto;
   background-color: var(--bg-primary);
 }
+select {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-secondary);
+}
 
 
 .header {
@@ -67,21 +65,12 @@ body {
   display: flex;
   align-items: center;
 }
-.google-blue {
-  color: var(--google-blue);
-}
-.google-red {
-  color: var(--google-red);
-}
-.google-yellow {
-  color: var(--google-yellow);
-}
-.google-green {
-  color: var(--google-green);
-}
 .translate {
-  color: var(--text-secondary);
+  color: var(--brand-main);
   margin-left: 6px;
+}
+.translate-brand {
+  color: var(--brand-secondary);
 }
 
 
@@ -103,6 +92,14 @@ body {
     scale: .9;
   }
 }
+.material-symbols-outlined {
+  color: var(--text-secondary);
+}
+
+.icon-button:hover .material-symbols-outlined {
+  color: var(--brand-main);
+}
+
 .language-selection {
   display: flex;
   align-items: center;
@@ -177,9 +174,11 @@ select {
   outline: none;
   font-size: 18px;
   border-radius: 8px 0 0 0;
+  background-color: transparent;
+  color: var(--text-primary);
 
   &::placeholder {
-    color: var(--text-secondary);
+    color: var(--text-tertiary);
   }
 }
 #outputText {
