@@ -57,6 +57,7 @@ class GoogleTranslator {
     this.micButton = $('#micButton')
     this.copyButton = $('#copyButton')
     this.clearButton = $('#clearButton')
+    this.volumeButton = $('#volumeButton')
 
     // Set default languages
     this.targetLanguage.value = GoogleTranslator.DEFAULT_TARGET_LANGUAGE
