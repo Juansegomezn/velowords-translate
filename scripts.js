@@ -42,6 +42,7 @@ class GoogleTranslator {
 
     this.recognition = null
     this.isListening = false
+    this.currentUtterance = null
   }
 
   init () {
@@ -61,6 +62,11 @@ class GoogleTranslator {
     this.targetLanguage.value = GoogleTranslator.DEFAULT_TARGET_LANGUAGE
     
     this.checkAPISupport()
+
+    // Load voices
+    speechSynthesis.onvoiceschanged = () => {
+      speechSynthesis.getVoices()
+    }
   }
 
   setupListeners() { 
@@ -74,6 +80,7 @@ class GoogleTranslator {
     this.swapLanguagesButton.addEventListener('click', () => this.swapLanguages())
     this.copyButton.addEventListener('click', () => this.copyTranslation())
     this.micButton.addEventListener('click', () => this.toggleSpeechRecognition())
+    this.volumeButton.addEventListener('click', () => this.speakTranslation())
   }
 
   debounceTranslate() {
@@ -381,7 +388,77 @@ class GoogleTranslator {
     if (!icon) return
 
     icon.textContent = listening ? "mic_off" : "mic"
-  } 
+  }
+
+  getVoiceForLanguage(langCode) {
+    const voices = speechSynthesis.getVoices()
+
+    const fullCode = GoogleTranslator.FULL_LANGUAGES_CODES[langCode]
+
+    return voices.find(voice =>
+      voice.lang === fullCode
+    ) || voices.find(voice =>
+      voice.lang.startsWith(langCode)
+    ) || null
+  }
+
+  speakTranslation() {
+    const text = this.outputText.textContent.trim()
+
+    if (!text) return
+
+    // Stop current speech if exists
+    if (speechSynthesis.speaking) {
+      speechSynthesis.cancel()
+    }
+
+    const targetLanguage = this.targetLanguage.value
+
+    const utterance = new SpeechSynthesisUtterance(text)
+
+    // Set language
+    const fullLang =
+      GoogleTranslator.FULL_LANGUAGES_CODES[targetLanguage]
+
+    if (fullLang) {
+      utterance.lang = fullLang
+    }
+
+    // Assign voice
+    const voice = this.getVoiceForLanguage(targetLanguage)
+    if (voice) {
+      utterance.voice = voice
+    }
+
+    // Optional tuning
+    utterance.rate = 1
+    utterance.pitch = 1
+
+    // UI feedback
+    utterance.onstart = () => {
+      this.updateVolumeUI(true)
+    }
+
+    utterance.onend = () => {
+      this.updateVolumeUI(false)
+    }
+
+    utterance.onerror = () => {
+      this.updateVolumeUI(false)
+    }
+
+    this.currentUtterance = utterance
+
+    speechSynthesis.speak(utterance)
+  }
+
+  updateVolumeUI(speaking) {
+    const icon = this.volumeButton.querySelector("span")
+
+    if (!icon) return
+
+    icon.textContent = speaking ? "volume_off" : "volume_up"
+  }
 }
 
 
