@@ -31,6 +31,16 @@ class GoogleTranslator {
   static DEFAULT_SOURCE_LANGUAGE = 'auto'
   static DEFAULT_TARGET_LANGUAGE = 'en'
 
+  static SPELL_DICTIONARY = {
+    helo: "hello",
+    teh: "the",
+    recieve: "receive",
+    adress: "address",
+    thier: "their",
+    becouse: "because"
+  }
+
+
   constructor() {
     this.init()
     this.setupListeners()
@@ -58,6 +68,8 @@ class GoogleTranslator {
     this.copyButton = $('#copyButton')
     this.clearButton = $('#clearButton')
     this.volumeButton = $('#volumeButton')
+    
+    this.suggestionBox = $('#suggestionBox')
 
     // Set default languages
     this.targetLanguage.value = GoogleTranslator.DEFAULT_TARGET_LANGUAGE
@@ -188,14 +200,38 @@ class GoogleTranslator {
 
     if (!text) {
       this.outputText.textContent = ''
+      this.hideSuggestion()
       return
     }
 
     this.outputText.textContent = 'Translating...'
 
     try {
+
+      // ---------- Detect language ----------
+      let detectedLang = this.sourceLanguage.value
+
+      if (detectedLang === GoogleTranslator.DEFAULT_SOURCE_LANGUAGE) {
+        detectedLang = await this.detectLanguage(text)
+      }
+
+      // ---------- Spell suggestion only for English ----------
+      if (detectedLang === 'en') {
+        const suggestion = this.getSpellingSuggestion(text)
+
+        if (suggestion) {
+          this.showSuggestion(suggestion.original, suggestion.suggestion)
+        } else {
+          this.hideSuggestion()
+        }
+      } else {
+        this.hideSuggestion()
+      }
+
+      // ---------- Translation ----------
       const translatedText = await this.getTranslation(text)
       this.outputText.textContent = translatedText
+
     } catch (error) {
       console.error('Error translating text.', error)
       this.outputText.textContent = 'Error translating text.'
@@ -499,6 +535,50 @@ class GoogleTranslator {
     const hasText = this.inputText.value.trim().length > 0
 
     this.clearButton.classList.toggle('visible', hasText)
+  }
+
+  getSpellingSuggestion(text) {
+    if (!text) return null
+
+    const words = text.toLowerCase().split(/\s+/)
+
+    for (const word of words) {
+      const suggestion = GoogleTranslator.SPELL_DICTIONARY[word]
+
+      if (suggestion) {
+        return {
+          original: word,
+          suggestion
+        }
+      }
+    }
+
+    return null
+  }
+
+  showSuggestion(originalText, suggestion) {
+    if (!this.suggestionBox) return
+
+    this.suggestionBox.innerHTML = `
+      Maybe you meant:
+      <button>${suggestion}</button>
+    `
+
+    this.suggestionBox.classList.add('visible')
+
+    this.suggestionBox.querySelector('button')
+      .addEventListener('click', () => {
+        this.inputText.value =
+          this.inputText.value.replace(originalText, suggestion)
+
+        this.hideSuggestion()
+        this.debounceTranslate()
+      })
+  }
+
+  hideSuggestion() {
+    this.suggestionBox.classList.remove('visible')
+    this.suggestionBox.innerHTML = ''
   }
 }
 

@@ -135,7 +135,7 @@ Centralized functions for:
 
 ## 📋 Future Enhancements
 
-- [ ] Add AI features: spelling suggestion with "Did you mean" UX
+- [✅] Add AI features: spelling suggestion with "Did you mean" UX (demo mode)
 - [ ] Add offline translation support (via ML models)
 - [ ] Support for more language pairs
 - [ ] Unit tests with Jest

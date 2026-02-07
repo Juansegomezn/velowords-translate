@@ -165,6 +165,26 @@ select {
   opacity: 1;
   pointer-events: auto;
 }
+
+.suggestion-box {
+  bottom: 12px;
+  left: 24px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  opacity: 0;
+  transition: opacity .3s;
+}
+.suggestion-box.visible {
+  opacity: 1;
+}
+.suggestion-box button {
+  background: none;
+  border: none;
+  color: var(--brand-main);
+  cursor: pointer;
+  margin-left: 4px;
+}
+
 #inputText {
   flex: 1;
   border: 0;
