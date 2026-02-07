@@ -158,6 +158,8 @@ textarea,
 #outputText {
   font-family: inherit;
   line-height: 1.5;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.35) transparent;
 }
 .clear-button {
   position: absolute;
