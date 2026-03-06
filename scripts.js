@@ -234,7 +234,20 @@ class GoogleTranslator {
       this.outputText.textContent = translatedText
 
     } catch (error) {
-      console.error('Error translating text.', error)
+      console.error('Translation error:', error)
+
+      // If browser doesn't support the Translator API
+      if (!window.Translator) {
+        this.outputText.textContent = 'Please try in Chrome.'
+        return
+      }
+
+      // Edge detection
+      if (navigator.userAgent.includes("Edg")) {
+        this.outputText.textContent = 'Please try in Chrome.'
+        return
+      }
+
       this.outputText.textContent = 'Error translating text.'
     }
   }
@@ -277,10 +290,10 @@ class GoogleTranslator {
     this.hasNativeTranslator = 'Translator' in window
     this.hasNativeDetector = 'LanguageDetector' in window
 
-    if (!this.hasNativeTranslator || !this.hasNativeDetector) { 
-      console.warn('Native translation or detection APIs are not supported.')
-    } else {
-      console.log('✅ Native AI APIs are supported.')
+    const isEdge = navigator.userAgent.includes("Edg")
+
+    if (!this.hasNativeTranslator || !this.hasNativeDetector || isEdge) {
+      this.outputText.textContent = 'Please try in Chrome.'
     }
   }
 
