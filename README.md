@@ -1,6 +1,6 @@
-# 🌐 VeloWords Translte
+# 🌐 VeloWords Translate
 
-Welcome to my **VeloWords Translte**, a lightweight and responsive translation application built to demonstrate clean code practices, DOM manipulation skills, and modern web development fundamentals.
+Welcome to my **VeloWords Translate**, a lightweight and responsive translation application built to demonstrate clean code practices, DOM manipulation skills, and modern web development fundamentals.
 
 This project is built with **Vanilla JavaScript, HTML5, and CSS3**, showcasing practical implementation without heavy frameworks.
 
